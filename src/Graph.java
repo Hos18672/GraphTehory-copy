@@ -19,7 +19,6 @@ public class Graph {
     private ArrayList<ArrayList<Integer>> adjListArray = new ArrayList<>();
     private String inputLine = "";
 
-
     String apPrint = "";
     String bridgePrint = "";
     private String filelocation, path = null;
@@ -82,6 +81,7 @@ public class Graph {
     public void setAdjListArray(ArrayList<ArrayList<Integer>> adjListArray) {
         this.adjListArray = adjListArray;
     }
+
     public Integer[][] readCSVFile() {
         Integer[][] myArray = null;
         System.out.println("....");
@@ -125,23 +125,22 @@ public class Graph {
             }
         }
     }
-    /*    public void allesNeuSetzen() {
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                AdjacencyMatrix2[i][j] = 0;
-                wegmatrix[i][j] = 0;
-                distanceMatix[i][j] = -1;
-                if (i == j) {
-                    wegmatrix[i][j] = 1;
-                    distanceMatix[i][j] = 0;
-                }
-            }
-        }
-    }*/
     public void initAll() {
         initialize();
         printGraph();
         ermittle();
+        PrintDistanceMatrix();
+        exzentrizitaet();
+        radiusUndDurchmesser();
+        zentrum();
+        komponentenanzahl();
+        AP();
+        bridge();
+    }
+    public void initAll2() {
+        //printGraph();
+        ermittle();
+        multiply();
         PrintDistanceMatrix();
         exzentrizitaet();
         radiusUndDurchmesser();
@@ -181,6 +180,35 @@ public class Graph {
             }
         }
     }
+    public void initialize2(JButton[][] loadedMtrix2) {
+
+        size = loadedMtrix2.length;
+        AdjacencyMatrix2 = new Integer[size][size];
+        distanceMatix = new Integer[size][size];
+        wegmatrix = new Integer[size][size];
+        matrixA = new Integer[size][size];
+        exzentrizitaet = new int[size];
+        posUnique = new int [size];
+        for (int i = 0; i < size; i++){
+            for (int j = 0; j < size; j++){
+                AdjacencyMatrix2[i][j] =Integer.parseInt(loadedMtrix2[i][j].getText());
+                distanceMatix[i][j] =Integer.parseInt(loadedMtrix2[i][j].getText());
+                matrixA[i][j] =Integer.parseInt(loadedMtrix2[i][j].getText());
+                if (i != j){
+                    if (distanceMatix[i][j]==0){
+                        distanceMatix[i][j]= -1;
+                        wegmatrix[i][j] = 0;
+                    }
+                    else {
+                        wegmatrix[i][j] = 1;
+                    }
+                }
+                else {
+                    wegmatrix[i][j] = 1;
+                }
+            }
+        }
+    }
     public void ermittle() {
         int anzMultipliziert = 0;
         while (anzMultipliziert < size) {
@@ -196,6 +224,26 @@ public class Graph {
                 }
             }
         }
+    }
+
+    public Integer[][] multiply() {
+        Integer multiply[][] = new Integer[size][size];
+        int sum = 0;
+        for (int row = 0; row < size ; row++) {
+            for (int col = 0; col < size ; col++) {
+                sum =0;
+                for (int index = 0; index < size; index++) {
+                    sum = sum + matrixA[row][index] * AdjacencyMatrix2[index][col];
+                }
+                multiply[row][col] = sum;
+            }
+        }
+        for(int i = 0; i < matrixA.length; i++){
+            for(int j = 0; j < matrixA.length; j++){
+                matrixA[i][j] = multiply[i][j];
+            }
+        }
+        return multiply;
     }
     public void PrintDistanceMatrix() {
         System.out.println("\n\n------------ Print DistanceMatrix---------------------\n");
@@ -223,26 +271,6 @@ public class Graph {
         System.out.println("Radius: " +radius);
         System.out.println("\n------------ Print Durchmesser ---------------------\n");
         System.out.println("Durchmesser: " +durchmesser);
-    }
-    public Integer[][] multiply() {
-        Integer multiply[][] = new Integer[size][size];
-        int sum = 0;
-        for (int row = 0; row < size ; row++) {
-            for (int col = 0; col < size ; col++) {
-                sum =0;
-                for (int index = 0; index < size; index++) {
-                    sum = sum + matrixA[row][index] * AdjacencyMatrix2[index][col];
-                }
-                multiply[row][col] = sum;
-            }
-        }
-        for(int i = 0; i < matrixA.length; i++){
-            for(int j = 0; j < matrixA.length; j++){
-                matrixA[i][j] = multiply[i][j];
-            }
-        }
-
-        return multiply;
     }
     public String exzentrizitaet(){
         int max = 0;
@@ -283,7 +311,6 @@ public class Graph {
             }
         }
         info = info + " " + " }";
-
         System.out.println("\n------------ Print Zentrum ---------------------\n");
         System.out.println(info);
         setZentrum( info);
@@ -361,73 +388,6 @@ public class Graph {
         }
         return infKompo;
     }
-    /*    public String bruecken(){
-        String str = "{";
-        int anzBruecken = 0;
-        int anzKompVorher = komponentenanzahl();
-        int anzKompNachher = 0;
-
-        for (int i = 0; i < size-1; i++){
-            for (int j = i; j < size; j++){
-                initialize(); //voriges wegmatrix neu initialisieren
-                if (AdjacencyMatrix2[i][j]==1){
-                    AdjacencyMatrix2[i][j]=0;
-                    AdjacencyMatrix2[j][i]=0;
-                    initialize();
-                    ermittle();
-                    anzKompNachher = komponentenanzahl();
-                    AdjacencyMatrix2[i][j]=1;
-                    AdjacencyMatrix2[j][i]=1;
-                    if (anzKompVorher < anzKompNachher){
-                        str += "[" + (i+1) + "," + (j+1) + "]";
-                        anzBruecken++;
-                    }
-                }
-            }
-        }
-        str += "}";
-        initialize();
-        ermittle();
-        return str + "Anzahl :" + anzBruecken;
-    }*/
-    /* public String artikulation(){
-        Integer[][] adjaKopie = new Integer[size][size];
-        for (int i = 0; i < size; i++){
-            for (int j = 0; j < size; j++){
-                adjaKopie[i][j]= AdjacencyMatrix2[i][j];
-            }
-        }
-        String str = "";
-        str += "{";
-        initialize();
-        ermittle();
-        int anzKompVorher = komponentenanzahl();
-        int anzKompNachher = 0;
-        for (int i = 0; i < size; i++){
-            initialize();
-            for (int j = 0; j < size; j++){
-                AdjacencyMatrix2[i][j]=0;
-                AdjacencyMatrix2[j][i]=0;
-            }
-            initialize();
-            ermittle();
-            anzKompNachher = komponentenanzahl();
-            if (anzKompVorher+1 < anzKompNachher){
-                str += " [" + (i+1) + "] ";
-            }
-            for (int a = 0; a < size; a++){
-                for (int b = 0; b < size; b++){
-                    AdjacencyMatrix2[a][b] =adjaKopie[a][b];
-                }
-            }
-        }
-        str += "}";
-        System.arraycopy(adjaKopie ,0,AdjacencyMatrix2,0,size);
-        initialize();
-        ermittle();
-        return str;
-    }
-*/
     //----------------------ArrayList -----------------------------------------------
     public static ArrayList<ArrayList<Integer>> convert(Integer[][] a) {
         // no of vertices
@@ -525,12 +485,9 @@ public class Graph {
                 apPrint += i + "  ";
                 System.out.print(i + " ");
             }
-
-
     }
     //---------------------Bridge------------------------------------
     public void bridgeUtil(int u, boolean visited[], int disc[], int low[], int parent[]) {
-
         // Mark the current node as visited
         visited[u] = true;
         // Initialize discovery time and low value
@@ -585,5 +542,3 @@ public class Graph {
             }
     }
 }
-
-
